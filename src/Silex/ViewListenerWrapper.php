@@ -69,17 +69,37 @@ class ViewListenerWrapper
             $parameters = $callbackReflection->getParameters();
             $expectedControllerResult = $parameters[0];
 
-            if ($expectedControllerResult->getClass() && (!is_object($controllerResult) || !$expectedControllerResult->getClass()->isInstance($controllerResult))) {
+            $type = $expectedControllerResult->getType();
+
+            if (!$type) {
+                return true;
+            }
+
+            $type_name = $type->getName();
+
+            if (!$type->isBuiltin() && (!is_object($controllerResult) || !($controllerResult instanceof $type_name))) {
                 return false;
             }
 
-            if ($expectedControllerResult->isArray() && !is_array($controllerResult)) {
+            if ('array' === $type_name && !is_array($controllerResult)) {
                 return false;
             }
 
-            if (method_exists($expectedControllerResult, 'isCallable') && $expectedControllerResult->isCallable() && !is_callable($controllerResult)) {
+            if ('callable' === $type_name && !is_callable($controllerResult)) {
                 return false;
             }
+
+            // if ($expectedControllerResult->getClass() && (!is_object($controllerResult) || !$expectedControllerResult->getClass()->isInstance($controllerResult))) {
+            //     return false;
+            // }
+
+            // if ($expectedControllerResult->isArray() && !is_array($controllerResult)) {
+            //     return false;
+            // }
+
+            // if (method_exists($expectedControllerResult, 'isCallable') && $expectedControllerResult->isCallable() && !is_callable($controllerResult)) {
+            //     return false;
+            // }
         }
 
         return true;
